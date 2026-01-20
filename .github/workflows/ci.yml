@@ -169,30 +169,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: './package-lock.json'
+          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm ci
 
       - name: Build application
+        working-directory: ./frontend
         run: npm run build
         env:
           CI: true
 
       - name: Verify build artifacts
         id: verify
+        working-directory: ./frontend
         run: |
-          if [ ! -d "dist" ]; then
-            echo "::error::Build failed - dist directory not found"
+          if [ ! -d ".next" ]; then
+            echo "::error::Build failed - .next directory not found"
             exit 1
           fi
           
-          if [ ! -f "dist/index.html" ]; then
-            echo "::error::Build failed - index.html not found"
-            exit 1
-          fi
-          
-          BUILD_SIZE=$(du -sh dist | cut -f1)
+          BUILD_SIZE=$(du -sh .next | cut -f1)
           echo "✅ Build artifacts verified"
           echo "📦 Build size: ${BUILD_SIZE}"
           echo "build_size=${BUILD_SIZE}" >> $GITHUB_OUTPUT
@@ -217,13 +215,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: './package-lock.json'
+          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm ci
 
       - name: Run tests
         id: tests
+        working-directory: ./frontend
         run: npm run test --if-present || echo "::notice::No test script configured"
         continue-on-error: true
     

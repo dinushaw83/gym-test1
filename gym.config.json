@@ -1,0 +1,40 @@
+{
+  "gym_name": "proj3",
+  "version": "1.0.0",
+  "ui": {
+    "repo": "",
+    "build_command": "npm run build",
+    "port": 5173,
+    "framework_version": "^1.0.0"
+  },
+  "backend": {
+    "port": 8880,
+    "framework_version": ">=1.0.0",
+    "database": {
+      "template_db": "proj3_seed",
+      "run_db_prefix": "proj3_"
+    }
+  },
+  "verifiers": {
+    "state_structure": {
+      "domain": "domainState",
+      "ui": "uiState"
+    },
+    "normalization_rules": {
+      "normalize_ids": true,
+      "normalize_timestamps": [
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "data_generation": {
+    "schema_path": "./data_generation/schema.json",
+    "config_path": "./data_generation/config.yaml"
+  },
+  "docker": {
+    "image_name": "gym-proj3",
+    "image_tag": "latest",
+    "registry": ""
+  }
+}

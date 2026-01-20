@@ -1,0 +1,197 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: proj3-postgres
+    environment:
+      - POSTGRES_USER=proj3
+      - POSTGRES_PASSWORD=proj3
+      - POSTGRES_DB=postgres
+      - POSTGRES_MAX_CONNECTIONS=300
+    # Postgres tuning for ~32GB RAM / 32 vCPU host (adjust if your host differs)
+    command:
+      - postgres
+      - -c
+      - max_connections=1000
+      - -c
+      - shared_buffers=8GB
+      - -c
+      - effective_cache_size=24GB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=1GB
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_buffers=16MB
+      # CPU/parallelism (32 vCPU)
+      - -c
+      - max_worker_processes=32
+      - -c
+      - max_parallel_workers=32
+      - -c
+      - max_parallel_workers_per_gather=8
+      - -c
+      - max_parallel_maintenance_workers=8
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - proj3-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proj3 -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  gym-proj3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_PATH=http://localhost:8880
+        - NEXT_PUBLIC_ENABLE_INSTRUMENTATION=true
+        - NEXT_PUBLIC_OTEL_ENDPOINT=http://localhost:4318/v1/metrics
+    container_name: gym-proj3
+    ports:
+      - "5173:5173"  # Frontend
+      - "8880:8880"  # Backend
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://proj3:proj3@postgres:5432/postgres
+      - POSTGRES_TEMPLATE_DB=proj3_seed
+      - POSTGRES_RUN_DB_PREFIX=proj3_
+      - NEXT_PUBLIC_API_BASE_PATH=http://localhost:8880
+      - NEXT_PUBLIC_ENABLE_INSTRUMENTATION=true
+      - NEXT_PUBLIC_OTEL_ENDPOINT=http://localhost:4318/v1/metrics
+      - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-false}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318/v1/metrics
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./databases:/app/databases
+      - ./backend/logs:/app/logs
+    networks:
+      - proj3-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8880/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:latest
+    profiles: ["instrumentation"]
+    ports:
+      - 8090:8090
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - proj3-network
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    profiles: ["instrumentation"]
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+    pid: host
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - "/:/host:ro"
+    networks:
+      - proj3-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["instrumentation"]
+    volumes:
+      - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+      - --web.enable-admin-api
+    restart: unless-stopped
+    depends_on:
+      - gym-proj3
+      - cadvisor
+      - node_exporter
+    networks:
+      - proj3-network
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    profiles: ["instrumentation"]
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./instrumentation/collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP (frontend and backend send here)
+      - "9465:9464" # Prometheus scrape endpoint (collector)
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - proj3-network
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: ["instrumentation"]
+    entrypoint: ["sh", "-c", "sh /etc/grafana/init.sh & exec /run.sh"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./instrumentation/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./instrumentation/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./instrumentation/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./instrumentation/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./instrumentation/grafana/init.sh:/etc/grafana/init.sh:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://localhost:3000}
+      - GF_SERVER_SERVE_FROM_SUB_PATH=${GF_SERVER_SERVE_FROM_SUB_PATH:-false}
+      - GF_SECURITY_DISABLE_INITIAL_ADMIN_PASSWORD_CHANGE=true
+      - GF_VIEWER_USER=readonly
+      - GF_VIEWER_PASSWORD=${GF_VIEWER_PASSWORD:-readonly}
+    restart: unless-stopped
+    networks:
+      - proj3-network
+
+networks:
+  proj3-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  prometheus_data:
+

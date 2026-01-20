@@ -1,0 +1,182 @@
+# Cursor Rules for {GYM_NAME} Gym Project
+
+## Project Overview
+This is a UI Gym project ({GYM_NAME}) for LLM training. Follow these standards for all development work.
+
+---
+
+## General Principles
+
+1. **Code Quality First**: Write clean, maintainable, and well-documented code
+2. **Type Safety**: Use type hints in Python, TypeScript types in frontend
+3. **Test Coverage**: Write tests for all new features and bug fixes
+4. **Security**: Always validate inputs, use authentication/authorization
+5. **Error Handling**: Handle errors gracefully with proper error messages
+6. **Documentation**: Document complex logic, APIs, and architectural decisions
+
+---
+
+## Python / FastAPI Backend Standards
+
+### Code Style
+- Follow PEP 8 style guide
+- Use type hints for all function parameters and return types
+- Maximum line length: 100 characters
+- Use descriptive variable and function names
+- Prefer composition over inheritance
+
+### FastAPI Best Practices
+- Use Pydantic models for request/response validation
+- Use dependency injection for database sessions and authentication
+- Use router prefixes: `/api/v1/{resource}`
+- Return proper HTTP status codes (200, 201, 400, 401, 403, 404, 500)
+- Use async/await for I/O operations
+- Document endpoints with docstrings and response models
+
+### File Organization
+```
+backend/app/
+├── api/v1/          # API endpoints (grouped by resource)
+├── models/          # SQLAlchemy models
+├── schemas/         # Pydantic schemas
+├── auth/            # Authentication & authorization
+├── database/        # Database configuration
+├── config.py        # Configuration settings
+└── main.py          # FastAPI app entry point
+```
+
+### Database Patterns
+- Use SQLAlchemy ORM models
+- Always use database sessions from dependency injection
+- Use transactions for multi-step operations
+- Handle database errors gracefully
+- Use migrations for schema changes
+- Never use raw SQL unless absolutely necessary
+
+### Authentication & Authorization
+- Always use `get_current_user` dependency for protected endpoints
+- Use RBAC decorators: `@require_role(["admin"])`, `@require_admin()`
+- Validate JWT tokens in middleware
+- Store sensitive data in environment variables
+- Never log passwords or tokens
+
+### Error Handling
+```python
+from fastapi import HTTPException, status
+
+# Use proper HTTP status codes
+raise HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="Resource not found"
+)
+```
+
+### Testing
+- Write unit tests for business logic
+- Write integration tests for API endpoints
+- Use pytest fixtures for test data
+- Mock external dependencies
+- Aim for >80% code coverage
+- Test error cases, not just happy paths
+
+---
+
+## TypeScript / Next.js Frontend Standards
+
+### Code Style
+- Use TypeScript strict mode
+- Use functional components with hooks
+- Prefer named exports over default exports
+- Use meaningful variable and function names
+- Maximum line length: 100 characters
+
+### React Best Practices
+- Use functional components, not class components
+- Use custom hooks for reusable logic
+- Keep components small and focused (single responsibility)
+- Use React Query for data fetching
+- Use proper state management
+- Memoize expensive computations with `useMemo`
+- Use `useCallback` for event handlers passed to children
+
+### TypeScript Types
+- Define interfaces for all data structures
+- Use type unions for discriminated unions
+- Avoid `any` type - use `unknown` if type is truly unknown
+- Use generic types for reusable components
+- Export types from dedicated `types.ts` files
+
+---
+
+## Security Best Practices
+
+### Backend
+- Always validate and sanitize user input
+- Use parameterized queries (SQLAlchemy handles this)
+- Implement rate limiting for API endpoints
+- Use HTTPS in production
+- Store secrets in environment variables, never in code
+- Use secure password hashing
+- Implement CSRF protection for state-changing operations
+
+### Frontend
+- Never store sensitive data in localStorage
+- Use secure HTTP-only cookies for authentication tokens
+- Sanitize user input before rendering
+- Validate forms on both client and server
+
+---
+
+## Testing Standards
+
+### Backend Tests
+- Place tests in `backend/tests/` directory
+- Name test files: `test_*.py`
+- Use pytest fixtures for common setup
+- Test files should mirror source structure
+- Use descriptive test names
+
+### Frontend Tests
+- Place tests next to components or in `__tests__/` directories
+- Use React Testing Library
+- Test user behavior, not implementation
+- Mock external dependencies
+
+---
+
+## Git & Version Control
+
+### Commit Messages
+- Use conventional commits format:
+  - `feat:` New feature
+  - `fix:` Bug fix
+  - `docs:` Documentation changes
+  - `test:` Test additions/changes
+  - `refactor:` Code refactoring
+  - `chore:` Maintenance tasks
+
+### Branching Strategy
+- `main` - Production-ready code
+- `develop` - Development branch
+- `feature/*` - Feature branches
+- `fix/*` - Bug fix branches
+- `hotfix/*` - Critical production fixes
+
+---
+
+## Code Review Checklist
+
+Before submitting code for review, ensure:
+- [ ] Code follows style guide
+- [ ] All tests pass
+- [ ] New code has tests
+- [ ] Documentation is updated
+- [ ] No hardcoded secrets
+- [ ] Error handling is implemented
+- [ ] Type hints/types are used
+- [ ] Code is properly formatted
+
+---
+
+**Remember**: Code is read more often than it's written. Write code that your future self (and teammates) will thank you for.
+

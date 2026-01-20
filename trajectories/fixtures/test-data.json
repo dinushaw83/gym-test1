@@ -1,0 +1,43 @@
+{
+  "testUsers": [
+    {
+      "id": "user-001",
+      "name": "Test User",
+      "email": "testuser@example.com",
+      "role": "standard"
+    },
+    {
+      "id": "user-002",
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "role": "admin"
+    }
+  ],
+  "testPages": [
+    {
+      "id": "page-001",
+      "name": "Home Page",
+      "path": "/",
+      "expectedTitle": "proj3"
+    },
+    {
+      "id": "page-002",
+      "name": "Settings Page",
+      "path": "/settings",
+      "expectedTitle": "Settings"
+    }
+  ],
+  "testInputs": {
+    "validEmail": "valid@example.com",
+    "invalidEmail": "invalid-email",
+    "shortPassword": "123",
+    "validPassword": "SecurePassword123!",
+    "longText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  "timeouts": {
+    "short": 3000,
+    "medium": 10000,
+    "long": 30000
+  }
+}
+

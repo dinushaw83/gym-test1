@@ -1,0 +1,21 @@
+# Data generation configuration for gym-proj3
+
+gym_name: proj3
+
+# Table generation configuration
+tables:
+  # Example table configuration
+  # users:
+  #   count: 50
+  #   generators:
+  #     email: email
+  #     display_name: name
+  #     role: enum
+  #     enum_values: [admin, member, viewer]
+
+# Generation settings
+settings:
+  start_id: 1
+  seed: null  # null for random seed
+
+

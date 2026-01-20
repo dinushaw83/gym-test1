@@ -30,8 +30,9 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             try:
                 self.meter = metrics.get_meter("http-requests-meter")
                 # Create histogram for request duration in milliseconds
+                # Note: Metric name must match Grafana dashboard expectations
                 self.request_duration_histogram = self.meter.create_histogram(
-                    "http_request_duration_milliseconds",
+                    "http_server_duration_milliseconds",
                     description="Duration of HTTP requests in milliseconds",
                     unit="ms",
                 )
@@ -65,10 +66,12 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             path = path.split("?")[0]
         
         # Build attributes
+        # Note: http_target label is required by Grafana dashboard
         attributes = {
             "method": request.method,
-            "path": path,
-            "status_code": response.status_code,
+            "http_target": path,  # Dashboard expects http_target, not path
+            "path": path,  # Keep path for backward compatibility
+            "status_code": str(response.status_code),  # Convert to string for consistency
         }
         
         # Add run_id if available

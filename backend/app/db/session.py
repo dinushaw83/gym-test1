@@ -1,6 +1,6 @@
 """Database connection setup and session management for proj3."""
 
-from fastapi import Depends, Request
+from fastapi import Depends, Request, HTTPException, status
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
@@ -39,8 +39,9 @@ def get_db(request: Request):
         Database session instance for the run-specific database.
     """
     if not hasattr(request.state, 'run_id') or not request.state.run_id:
-        raise AttributeError(
-            "run_id not found in request.state. Ensure you are authenticated."
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Please provide a valid Bearer token."
         )
     
     run_id = request.state.run_id

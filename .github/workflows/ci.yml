@@ -73,6 +73,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Show project structure
+        run: |
+          echo "=== Installing tree for better structure display ==="
+          sudo apt-get update -qq && sudo apt-get install -y tree || echo "tree not available, using find/ls"
+          echo ""
+          echo "=== Project Root Structure ==="
+          ls -la
+          echo ""
+          echo "=== Backend Structure ==="
+          if [ -d "backend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 backend || find backend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find backend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R backend | head -100
+            fi
+          else
+            echo "Backend directory not found"
+          fi
+          echo ""
+          echo "=== Frontend Structure ==="
+          if [ -d "frontend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 frontend || find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R frontend | head -100
+            fi
+          else
+            echo "Frontend directory not found"
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -108,6 +138,36 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Show project structure
+        run: |
+          echo "=== Installing tree for better structure display ==="
+          sudo apt-get update -qq && sudo apt-get install -y tree || echo "tree not available, using find/ls"
+          echo ""
+          echo "=== Project Root Structure ==="
+          ls -la
+          echo ""
+          echo "=== Backend Structure ==="
+          if [ -d "backend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 backend || find backend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find backend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R backend | head -100
+            fi
+          else
+            echo "Backend directory not found"
+          fi
+          echo ""
+          echo "=== Frontend Structure ==="
+          if [ -d "frontend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 frontend || find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R frontend | head -100
+            fi
+          else
+            echo "Frontend directory not found"
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -164,6 +224,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Show project structure
+        run: |
+          echo "=== Installing tree for better structure display ==="
+          sudo apt-get update -qq && sudo apt-get install -y tree || echo "tree not available, using find/ls"
+          echo ""
+          echo "=== Project Root Structure ==="
+          ls -la
+          echo ""
+          echo "=== Backend Structure ==="
+          if [ -d "backend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 backend || find backend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find backend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R backend | head -100
+            fi
+          else
+            echo "Backend directory not found"
+          fi
+          echo ""
+          echo "=== Frontend Structure ==="
+          if [ -d "frontend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 frontend || find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R frontend | head -100
+            fi
+          else
+            echo "Frontend directory not found"
+          fi
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -213,6 +303,36 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Show project structure
+        run: |
+          echo "=== Installing tree for better structure display ==="
+          sudo apt-get update -qq && sudo apt-get install -y tree || echo "tree not available, using find/ls"
+          echo ""
+          echo "=== Project Root Structure ==="
+          ls -la
+          echo ""
+          echo "=== Backend Structure ==="
+          if [ -d "backend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 backend || find backend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find backend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R backend | head -100
+            fi
+          else
+            echo "Backend directory not found"
+          fi
+          echo ""
+          echo "=== Frontend Structure ==="
+          if [ -d "frontend" ]; then
+            if command -v tree &> /dev/null; then
+              tree -L 3 frontend || find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g'
+            else
+              find frontend -maxdepth 3 -print | sed 's|[^/]*/| |g' || ls -R frontend | head -100
+            fi
+          else
+            echo "Frontend directory not found"
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
